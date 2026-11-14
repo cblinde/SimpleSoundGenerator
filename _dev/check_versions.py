@@ -14,7 +14,9 @@ It fails when
   different version for torch, torchaudio or diffusers;
 * the launchers disagree on ``PY_VERSION`` or ``PY_RELEASE``, or the README's
   portable CPython version disagrees with them;
-* a comment in ``requirements.txt`` restates a different torch pin.
+* a comment in ``requirements.txt`` restates a different torch pin;
+* the screenshot job pins PySide6, numpy or soundfile differently from
+  requirements.txt.
 
 The check is version-agnostic: bumping ``APP_VERSION``, a pin or the portable
 Python version only requires updating the documentation, never this file.
@@ -95,6 +97,11 @@ REQUIREMENTS_PIN_PATTERNS = {
         r"never got\s+(\d+\.\d+\.\d+)",
     ),
 }
+
+#: The screenshot job installs a torch-free subset of requirements. Its
+#: hardcoded specs must stay equal to the pins above.
+SCREENSHOT_PACKAGES = ("PySide6", "numpy", "soundfile")
+WORKFLOW_PIN_RE = re.compile(r'"([A-Za-z0-9_.-]+)==([^"]+)"')
 
 
 def fail(errors: list[str]) -> int:
@@ -196,6 +203,27 @@ def check_requirements_comments(pins: dict[str, str], errors: list[str]) -> None
                 )
 
 
+def check_screenshot_pins(pins: dict[str, str], errors: list[str]) -> None:
+    """Keep the screenshot job's hardcoded install pins in sync with requirements."""
+    text = (ROOT / ".github/workflows/release.yml").read_text(encoding="utf-8")
+    found: dict[str, set[str]] = {}
+    for name, version in WORKFLOW_PIN_RE.findall(text):
+        found.setdefault(name.lower(), set()).add(version)
+    for package in SCREENSHOT_PACKAGES:
+        pin = pins.get(package.lower())
+        if pin is None:
+            errors.append(f"requirements.txt has no concrete {package} pin")
+            continue
+        values = found.get(package.lower(), set())
+        if not values:
+            errors.append(f"workflow no longer pins {package} for the screenshot job")
+        for value in sorted(values):
+            if value != pin:
+                errors.append(
+                    f"workflow pins {package} {value}, but requirements.txt pins {pin}"
+                )
+
+
 def newest_zip(version: str) -> Path | None:
     """The likeliest artifact to check: newest zip carrying this APP_VERSION."""
     candidates = [
@@ -293,6 +321,7 @@ def main(argv: list[str] | None = None) -> int:
     if not errors:
         check_readme(pins, errors)
         check_requirements_comments(pins, errors)
+        check_screenshot_pins(pins, errors)
 
     zip_path = args.zip or newest_zip(version)
     if zip_path is None:
