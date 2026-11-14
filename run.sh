@@ -206,9 +206,9 @@ fi
 PY="$VENV_PY"
 
 # --------------------------------------------------------------- 3 packages
-# A repeat launch must not pay pip's resolver plus a git fetch of the SA3
-# runtime - that is minutes, while the GUI itself is ready in about two
-# seconds. The requirements.txt that was last verified is kept in
+# A repeat launch must not pay pip's resolver plus a source-archive download
+# of the SA3 runtime - that is minutes, while the GUI itself is ready in about
+# two seconds. The requirements.txt that was last verified is kept in
 # .venv/.deps-req; when it still matches and the key packages resolve, the
 # whole install block is skipped. --repair, an edited requirements.txt or a
 # missing package all fall through to the full check.

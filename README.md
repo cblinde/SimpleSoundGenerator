@@ -170,7 +170,7 @@ audio produced and the overall realtime factor.
 checkpoint read and text encoder, `placement` the device move / offload setup.
 On a track, `sampling` covers denoising plus decode and `save` covers every
 requested encoder (MP3/WAV/FLAC), the waveform peaks and the JSON sidecar; `x realtime` is generated seconds per
-wall second, so 3.74x means an 120 s clip took 32 s.
+wall second, so 3.74x means a 120 s clip took 32 s.
 
 Everything stays in the app folder:
 
@@ -390,9 +390,9 @@ files share a stem and an identical level. **MP3 is ticked by default**, and at
 least one box must stay ticked: unticking the last one is refused and the box
 comes back on.
 
-| Format | Written as | 3 min clip | When to use it |
+| Format | Written as | 2 min clip | When to use it |
 |---|---|---|---|
-| MP3 | 320 kbps CBR, LAME quality 0 (slowest, best) | ~7 MB | editing, previews, sharing |
+| MP3 | 320 kbps CBR, LAME quality 0 (slowest, best) | ~4.8 MB | editing, previews, sharing |
 | WAV | 24-bit PCM | ~31 MB | further processing, mastering |
 | FLAC | 24-bit lossless | ~16 MB | lossless archive, half the size |
 
@@ -400,7 +400,7 @@ A track stays **one row** no matter how many formats were written: the
 **Format** column lists them best-first (`WAV + FLAC + MP3`) and its tooltip
 shows each file's size. **Preview** always plays the best-quality file that
 exists — WAV, then FLAC, then MP3 — and the preview line names the format in use
-(`preview WAV (best of WAV/FLAC/MP3)`), so what you hear is never a lossy copy
+(`preview WAV (best of 3)`), so what you hear is never a lossy copy
 while a lossless sibling is present. Deleting one format leaves the row intact
 as long as another remains.
 
@@ -785,7 +785,7 @@ persistence.
 * `code/app.py` launches offscreen: event loop stays alive, hardware probe is
 logged, no stderr output.
 * UI restructuring checked offscreen: the status line sits above the track list
-  and collapses from 29 px to 16 px when idle, Sampling keeps Duration/Batch
+  and collapses to a single row when idle, Sampling keeps Duration/Batch
   tracks visible with the rest behind a collapsed "Advanced sampling" panel,
   Seed and "Random seed each track" share a row, and both disclosures reopen the
   way they were left (including survival of a corrupt `config/settings.ini`).

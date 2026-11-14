@@ -117,9 +117,9 @@ call :log "Created .venv"
 :packages
 set "PY=%VENV_PY%"
 rem -------------------------------------------------------------- 3. packages
-rem A repeat launch must not pay pip's resolver plus a git fetch of the SA3
-rem runtime - that is minutes, while the GUI itself is ready in about two
-rem seconds. The requirements.txt that was last verified is kept in
+rem A repeat launch must not pay pip's resolver plus a source-archive download
+rem of the SA3 runtime - that is minutes, while the GUI itself is ready in
+rem about two seconds. The requirements.txt that was last verified is kept in
 rem .venv\.deps-req; when it still matches and the key packages resolve, the
 rem whole install block is skipped. --repair, an edited requirements.txt or a
 rem missing package all fall through to the full check.

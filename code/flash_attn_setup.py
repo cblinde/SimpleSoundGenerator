@@ -46,7 +46,7 @@ REPOS = (
 )
 MAX_RELEASES = 6
 
-# flash_attn-2.8.2+cu128torch2.7.1cxx11abiFALSEfullbackward-cp311-cp311-win_amd64.whl
+# e.g. flash_attn-<version>+cu128torch2.7.1cxx11abiFALSEfullbackward-cp311-cp311-win_amd64.whl
 ASSET_RE = re.compile(
     r"^flash_attn-(?P<version>\d[^-+]*)\+cu(?P<cu>\d+)torch(?P<torch>\d+\.\d+(?:\.\d+)?)"
     r"[^-]*-(?P<py>cp\d{3})-cp\d{3}-(?P<plat>[a-z0-9_]+)\.whl$",

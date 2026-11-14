@@ -720,9 +720,9 @@ class AudioEngine:
             if class_name and "StableAudio3" in class_name and using_auto:
                 hint = (
                     "\n\nThis folder is a Stable Audio 3 (diffusers) checkpoint but the "
-                    "installed diffusers has no StableAudio3Pipeline. Install diffusers "
-                    "from source: pip install \"git+https://github.com/huggingface/diffusers\" "
-                    "— or use the native SA3 backend instead (see README)."
+                    "installed diffusers has no StableAudio3Pipeline. Upgrade diffusers "
+                    "to the pin in code/requirements.txt (re-run run.bat / run.sh), or "
+                    "use the native SA3 backend instead (see README)."
                 )
             raise GenerationError(
                 f"Failed to load the pipeline from {directory}.\n"
