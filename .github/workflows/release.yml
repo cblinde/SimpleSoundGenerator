@@ -137,6 +137,7 @@ jobs:
           name: Simple Sound Generator v${{ steps.assets.outputs.version }}
           make_latest: true
           generate_release_notes: true
+          fail_on_unmatched_files: true
           body: |
             Portable build of Simple Sound Generator — unzip the archive, then
             start `run.bat` (Windows) or `./run.sh` (macOS/Linux). The launcher
@@ -147,3 +148,14 @@ jobs:
           files: |
             ${{ steps.assets.outputs.zip }}
             ${{ steps.assets.outputs.screenshot }}
+
+      - name: Verify both assets are attached
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          version="${{ steps.assets.outputs.version }}"
+          gh release view "v${version}" --json assets --jq '.assets[].name' | tee /tmp/assets.txt
+          grep -qx "SimpleSoundGenerator-v${version}.zip" /tmp/assets.txt
+          grep -qx "screenshot.png" /tmp/assets.txt
+          echo "Release v${version} carries the zip and the screenshot."
