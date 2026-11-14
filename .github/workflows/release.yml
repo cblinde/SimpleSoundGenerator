@@ -108,14 +108,27 @@ jobs:
       - name: Prepare release assets
         id: assets
         run: |
+          set -eu
           version="$(tr -d '[:space:]' < artifacts/version.txt)"
-          zip="$(ls artifacts/SimpleSoundGenerator-v*.zip | head -n 1)"
-          staged="artifacts/SimpleSoundGenerator-v${version}.zip"
-          if [ "$zip" != "$staged" ]; then
-            mv "$zip" "$staged"
+          # upload-artifact keeps the shared parent folder of its path list, so
+          # the zip can arrive as artifacts/delivery/<name>.zip - locate it
+          # instead of assuming a fixed depth.
+          zip="$(find artifacts -type f -name 'SimpleSoundGenerator-v*.zip' -print -quit)"
+          if [ -z "$zip" ]; then
+            echo "ERROR: no delivery zip in the downloaded artifacts:" >&2
+            find artifacts -type f >&2
+            exit 1
           fi
+          shot="$(find artifacts -type f -name 'screenshot.png' -print -quit)"
+          if [ -z "$shot" ]; then
+            echo "ERROR: no screenshot.png in the downloaded artifacts" >&2
+            exit 1
+          fi
+          staged="SimpleSoundGenerator-v${version}.zip"
+          mv "$zip" "$staged"
           echo "version=${version}" >> "$GITHUB_OUTPUT"
           echo "zip=${staged}" >> "$GITHUB_OUTPUT"
+          echo "screenshot=${shot}" >> "$GITHUB_OUTPUT"
           echo "Releasing v${version} with ${staged}"
 
       - uses: softprops/action-gh-release@v2
@@ -133,4 +146,4 @@ jobs:
             The screenshot above is rendered from the current source by CI.
           files: |
             ${{ steps.assets.outputs.zip }}
-            artifacts/screenshot.png
+            ${{ steps.assets.outputs.screenshot }}
