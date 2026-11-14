@@ -12,8 +12,8 @@ It fails when
 * a shipped text file differs from the working tree (staging drift);
 * a pin in ``code/requirements.txt`` is missing, or the README quotes a
   different version for torch, torchaudio or diffusers;
-* the portable CPython version in ``run.sh``, ``run.bat`` and the README
-  disagrees;
+* the launchers disagree on ``PY_VERSION`` or ``PY_RELEASE``, or the README's
+  portable CPython version disagrees with them;
 * a comment in ``requirements.txt`` restates a different torch pin.
 
 The check is version-agnostic: bumping ``APP_VERSION``, a pin or the portable
@@ -53,6 +53,13 @@ PIN_RE = re.compile(r"^([A-Za-z0-9_.-]+)==([0-9][0-9A-Za-z.+-]*)")
 PY_VERSION_PATTERNS = {
     "run.sh": r'^PY_VERSION="([^"]+)"',
     "run.bat": r'^set "PY_VERSION=([^"]+)"',
+}
+
+#: Both launchers build the same python-build-standalone URL, so a different
+#: release stamp would fetch a different snapshot (or 404).
+PY_RELEASE_PATTERNS = {
+    "run.sh": r'^PY_RELEASE="([^"]+)"',
+    "run.bat": r'^set "PY_RELEASE=([^"]+)"',
 }
 
 #: README sentences that state a pinned version. Every match must equal the
@@ -129,7 +136,7 @@ def check_readme(pins: dict[str, str], errors: list[str]) -> None:
 
 
 def check_python_version(errors: list[str]) -> str | None:
-    """Keep the portable CPython pin in both launchers and the README aligned."""
+    """Keep the portable CPython pin and its release stamp aligned."""
     versions: dict[str, str] = {}
     for name, pattern in PY_VERSION_PATTERNS.items():
         text = (ROOT / name).read_text(encoding="utf-8")
@@ -138,15 +145,30 @@ def check_python_version(errors: list[str]) -> str | None:
             errors.append(f"no PY_VERSION assignment found in {name}")
         else:
             versions[name] = match.group(1)
-    if not versions:
-        return None
 
-    expected = versions.get("run.sh") or next(iter(versions.values()))
+    releases: dict[str, str] = {}
+    for name, pattern in PY_RELEASE_PATTERNS.items():
+        text = (ROOT / name).read_text(encoding="utf-8")
+        match = re.search(pattern, text, re.MULTILINE)
+        if not match:
+            errors.append(f"no PY_RELEASE assignment found in {name}")
+        else:
+            releases[name] = match.group(1)
+
     if len(set(versions.values())) > 1:
         errors.append(
             "launchers disagree on PY_VERSION: "
             + ", ".join(f"{name} {value}" for name, value in versions.items())
         )
+    if len(set(releases.values())) > 1:
+        errors.append(
+            "launchers disagree on PY_RELEASE: "
+            + ", ".join(f"{name} {value}" for name, value in releases.items())
+        )
+    if not versions:
+        return None
+
+    expected = versions.get("run.sh") or next(iter(versions.values()))
 
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     found = re.findall(r"CPython\s+(\d+\.\d+\.\d+)", readme)
