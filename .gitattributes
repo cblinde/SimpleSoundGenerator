@@ -1,0 +1,12 @@
+# The Python sources are deliberately CRLF (see AGENTS.md); commit them as-is
+# instead of letting Git normalise the line endings.
+* -text
+
+# Launchers must keep the line endings their shell expects.
+*.bat text eol=crlf
+*.sh text eol=lf
+
+# Binary assets
+*.png binary
+*.zip binary
+*.wav binary

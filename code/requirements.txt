@@ -1,0 +1,42 @@
+# ---------------------------------------------------------------------------
+# Simple Sound Generator - pinned dependency set
+#
+# Installed by run.bat / run.sh into ./.venv with the app-local interpreter.
+#
+# PyTorch is pinned to 2.7.1 because the optional Stable Audio 3 runtime imports
+# torchaudio, and torchaudio is published only up to 2.11.1 - there is no build
+# for the newest torch (2.15). run.bat / run.sh install the matching torch +
+# torchaudio pair *before* this file, choosing a CUDA channel (cu128 / cu126)
+# when nvidia-smi is present and otherwise the CPU wheel. The tag already says
+# 2.7.1 (e.g. 2.7.1+cu128), which satisfies ==2.7.1, so pip never swaps a CUDA
+# wheel for the CPU one. cu124 is skipped: that channel never got 2.7.1.
+# ---------------------------------------------------------------------------
+
+# --- inference core -------------------------------------------------------
+torch==2.7.1                      # exact: torchaudio stops at 2.11.1, see header
+torchaudio==2.7.1                 # imported by the stable_audio_3 runtime (SA3 models)
+einops==0.8.2                     # stable_audio_3 dependency (runtime installed --no-deps)
+einops-exts==0.0.4                # ditto
+diffusers==0.42.1                 # StableAudioPipeline (Stable Audio Open 1.0)
+transformers==5.22.1              # T5 / T5Gemma text encoders
+accelerate==1.15.0                # required for cpu-offload / sequential-offload
+huggingface_hub==2.4.0,<3.0       # weights download + local model caching
+safetensors>=0.8.0
+torchsde==0.2.6                   # CosineDPMSolverMultistepScheduler imports it lazily
+                                  # (pipeline load fails without it); brings scipy + trampoline
+
+# --- audio I/O ------------------------------------------------------------
+numpy==2.4.6
+soundfile==0.14.0                 # libsndfile wheels -> 24-bit PCM WAV + FLAC export
+lameenc==1.9.0                    # LAME MP3 encoder (320 kbps); LGPL-3.0 like PySide6,
+                                  # and the MP3 patents expired in 2017
+
+# --- desktop UI -----------------------------------------------------------
+PySide6==6.12.0                   # QtWidgets + QtMultimedia (player, drag-n-drop);
+                                  # LGPL-3.0, so closed-source distribution stays legal
+
+# Optional Stable Audio 3 runtime (not on PyPI). run.bat / run.sh install it from
+# the GitHub source archive as a separate --no-deps step after this file, so no
+# git executable is needed and a network failure can never break the core
+# install; its dependencies (einops, torchaudio) are pinned above. Without it,
+# native SA3 checkpoints do not load and the app says so.

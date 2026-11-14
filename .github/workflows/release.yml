@@ -1,0 +1,136 @@
+name: Build, screenshot & release
+
+# Every push to main validates the sources, builds the portable zip, renders
+# docs/screenshot.png offscreen and publishes both as a GitHub release tagged
+# v<APP_VERSION>. Pull requests only run the checks and keep the artifacts.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  check:
+    name: Check sources & build zip
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Compile every module
+        run: |
+          python -m py_compile \
+            code/app.py code/audio_engine.py code/model_manager.py \
+            code/paths.py code/flash_attn_setup.py \
+            _dev/build_delivery.py _dev/screenshot.py
+
+      - name: Validate registry and launcher
+        run: |
+          python -m json.tool config/models.json > /dev/null
+          bash -n run.sh
+
+      - name: Build portable delivery zip
+        run: python _dev/build_delivery.py
+
+      - name: Keep the version for the release job
+        run: |
+          python - <<'EOF'
+          import pathlib, re
+          text = pathlib.Path("code/app.py").read_text(encoding="utf-8")
+          match = re.search(r'^APP_VERSION\s*=\s*"([^"]+)"', text, re.MULTILINE)
+          assert match, "APP_VERSION not found"
+          pathlib.Path("version.txt").write_text(match.group(1) + "\n", encoding="utf-8")
+          print("version:", match.group(1))
+          EOF
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: delivery
+          path: |
+            delivery/SimpleSoundGenerator-v*.zip
+            version.txt
+          if-no-files-found: error
+
+  screenshot:
+    name: Render window screenshot
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Qt runtime libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libegl1 libxkbcommon0 libpulse0 libxrandr2 libxrender1 \
+            libsndfile1 fonts-dejavu-core
+
+      - name: Install the Qt binding used by the app
+        run: |
+          python -m pip install --disable-pip-version-check \
+            "PySide6==6.12.0" "numpy==2.4.6" "soundfile==0.14.0"
+
+      - name: Render the window offscreen
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: python _dev/screenshot.py docs/screenshot.png
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: screenshot
+          path: docs/screenshot.png
+          if-no-files-found: error
+
+  release:
+    name: Publish GitHub release
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: [check, screenshot]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Prepare release assets
+        id: assets
+        run: |
+          version="$(tr -d '[:space:]' < artifacts/version.txt)"
+          zip="$(ls artifacts/SimpleSoundGenerator-v*.zip | head -n 1)"
+          staged="artifacts/SimpleSoundGenerator-v${version}.zip"
+          if [ "$zip" != "$staged" ]; then
+            mv "$zip" "$staged"
+          fi
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "zip=${staged}" >> "$GITHUB_OUTPUT"
+          echo "Releasing v${version} with ${staged}"
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.assets.outputs.version }}
+          name: Simple Sound Generator v${{ steps.assets.outputs.version }}
+          make_latest: true
+          generate_release_notes: true
+          body: |
+            Portable build of Simple Sound Generator — unzip the archive, then
+            start `run.bat` (Windows) or `./run.sh` (macOS/Linux). The launcher
+            builds its own Python environment and downloads model weights on
+            first use, so no installer or admin rights are needed.
+
+            The screenshot above is rendered from the current source by CI.
+          files: |
+            ${{ steps.assets.outputs.zip }}
+            artifacts/screenshot.png

@@ -1,0 +1,109 @@
+Simple Sound Generator — licence information
+============================================
+
+Copyright (c) 2026 the Simple Sound Generator contributors
+
+This file has four parts: the licence for the application code (1), the terms
+that apply to the AI models the app downloads (2), the third-party software it
+installs (3), and notes on changing this licence (4). Part 1 does NOT cover the
+model weights or the audio you generate with them — see part 2.
+
+
+1. Application code — MIT License
+---------------------------------
+
+Applies to: code/app.py, code/audio_engine.py, code/model_manager.py, code/paths.py,
+code/flash_attn_setup.py, run.bat, run.sh, config/models.json, code/requirements.txt, README.md
+and _dev/build_delivery.py.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+
+2. AI models and weights — not covered by part 1
+------------------------------------------------
+
+No model weights are included in this package. The application downloads them
+from Hugging Face into config/models on first use, and they remain under their own
+licences, as does audio generated with them.
+
+**stabilityai/stable-audio-open-1.0**
+Licence: Stability AI Community License (Hugging Face licence name
+`stable-audio-community`). Free for research, non-commercial and limited
+commercial use; commercial use above the revenue threshold stated in the
+agreement requires a paid licence from Stability AI, and commercial use
+requires registration. Read the full text before commercial use:
+  https://huggingface.co/stabilityai/stable-audio-open-1.0/blob/main/LICENSE.md
+  https://stability.ai/community-license
+  https://stability.ai/license
+
+Audio you generate with these models is yours to use within the terms of the
+model licence that produced it; this application claims no rights over it and
+cannot grant rights the model licence withholds.
+
+**stabilityai/stable-audio-3-small-music**
+**stabilityai/stable-audio-3-small-sfx**
+**stabilityai/stable-audio-3-medium**
+Licence: Stability AI's terms for the Stable Audio 3 family, shown on each
+repository page and accepted per repository. All three repositories are gated:
+the files are only served to accounts that have accepted the terms while signed
+in. Check the licence on the repository page before publishing or monetising
+generated audio.
+
+All Stable Audio names and marks belong to Stability AI Ltd. This application is
+an independent client for those models and is not affiliated with, endorsed by
+or supported by Stability AI.
+
+
+3. Third-party software — installed, not bundled
+------------------------------------------------
+
+run.bat / run.sh install these into ./.venv from PyPI; their licences and the
+notices they ship with apply unchanged:
+
+  PyTorch, torchaudio                 BSD-3-Clause
+  diffusers, transformers             Apache-2.0
+  accelerate, huggingface_hub         Apache-2.0
+  safetensors, torchsde               Apache-2.0
+  einops, einops-exts                 MIT
+  numpy, soundfile                    BSD-3-Clause
+  PySide6 / Qt for Python             LGPL-3.0 (Qt itself: LGPL-3.0 / GPL / commercial)
+  lameenc                             LGPL-3.0 (LAME); MP3 patents expired in 2017
+  stable_audio_3 (source archive)     Stability AI — see its repository
+
+`run.bat` / `run.sh` also download a portable CPython build
+(python-build-standalone) into `./.python` when no suitable interpreter is
+found; that runtime is Python itself, under the PSF licence, and its build
+scripts are MPL-2.0. Neither is bundled with this package.
+
+**PySide6 note.** The GUI uses PySide6, the official Qt for Python binding, which
+is LGPL-3.0. That allows this application to be distributed as closed source or
+commercially, provided you keep Qt dynamically linked (the wheel does), ship the
+LGPL-3.0 text, keep the Qt copyright notices intact, and let users replace the Qt
+libraries with their own build. Static linking or modifying Qt itself would bring
+the GPL-3.0 obligations back. The earlier PyQt6 dependency was removed for exactly
+this reason: PyQt6 is GPL-3.0 unless a commercial Riverbank licence is bought.
+
+
+4. Changing this licence
+------------------------
+
+The application code is the author's to license. To use a different licence for
+part 1, replace the text of section 1 (keeping sections 2 and 3, which describe
+third-party terms you cannot relicense), bump APP_VERSION in code/app.py and rebuild
+the delivery with _dev/build_delivery.py.

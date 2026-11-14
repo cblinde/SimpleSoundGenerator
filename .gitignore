@@ -1,0 +1,24 @@
+# portable runtime (recreated by run.bat / run.sh)
+.python/
+.venv/
+__pycache__/
+*.pyc
+
+# app state (code/ + config/ layout)
+config/models/
+config/settings.ini
+config/.hf_token
+outputs/
+logs/
+*.log
+
+# legacy layout (pre-1.7), kept ignored for in-place upgrades
+models/
+settings.ini
+.hf_token
+
+# generated release staging (the zip builder's output)
+delivery/
+
+# agent/tooling scratch
+.freebuff/
