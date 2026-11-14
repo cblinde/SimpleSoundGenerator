@@ -17,8 +17,9 @@ models/
 settings.ini
 .hf_token
 
-# generated release staging (the zip builder's output)
+# generated release staging (the zip builder's output and the CI dist/ folder)
 delivery/
+dist/
 
 # agent/tooling scratch
 .freebuff/

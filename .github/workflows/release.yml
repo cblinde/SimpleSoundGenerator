@@ -79,10 +79,18 @@ jobs:
             echo "create=true" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Stage the zip flat in dist/
+        run: |
+          set -eu
+          mkdir -p dist
+          cp delivery/SimpleSoundGenerator-v*.zip \
+            "dist/SimpleSoundGenerator-v${{ steps.release.outputs.version }}.zip"
+          ls -l dist
+
       - uses: actions/upload-artifact@v4
         with:
           name: delivery
-          path: delivery/SimpleSoundGenerator-v*.zip
+          path: dist/
           if-no-files-found: error
 
   screenshot:
@@ -112,10 +120,16 @@ jobs:
           QT_QPA_PLATFORM: offscreen
         run: python _dev/screenshot.py docs/screenshot.png
 
+      - name: Stage the screenshot flat in dist/
+        run: |
+          mkdir -p dist
+          cp docs/screenshot.png dist/screenshot.png
+          ls -l dist
+
       - uses: actions/upload-artifact@v4
         with:
           name: screenshot
-          path: docs/screenshot.png
+          path: dist/
           if-no-files-found: error
 
   release:
@@ -127,41 +141,20 @@ jobs:
     needs: [check, screenshot]
     runs-on: ubuntu-latest
     steps:
+      # Both artifacts were uploaded from a dist/ folder, so they land flat in
+      # dist/ - no directory nesting and no search step needed.
       - uses: actions/download-artifact@v4
         with:
-          path: artifacts
+          path: dist
           merge-multiple: true
 
-      - name: Prepare release assets
-        id: assets
-        run: |
-          set -eu
-          version="${{ needs.check.outputs.version }}"
-          # upload-artifact keeps the shared parent folder of its path list, so
-          # the zip can arrive as artifacts/delivery/<name>.zip - locate it
-          # instead of assuming a fixed depth.
-          zip="$(find artifacts -type f -name 'SimpleSoundGenerator-v*.zip' -print -quit)"
-          if [ -z "$zip" ]; then
-            echo "ERROR: no delivery zip in the downloaded artifacts:" >&2
-            find artifacts -type f >&2
-            exit 1
-          fi
-          shot="$(find artifacts -type f -name 'screenshot.png' -print -quit)"
-          if [ -z "$shot" ]; then
-            echo "ERROR: no screenshot.png in the downloaded artifacts" >&2
-            exit 1
-          fi
-          staged="SimpleSoundGenerator-v${version}.zip"
-          mv "$zip" "$staged"
-          echo "version=${version}" >> "$GITHUB_OUTPUT"
-          echo "zip=${staged}" >> "$GITHUB_OUTPUT"
-          echo "screenshot=${shot}" >> "$GITHUB_OUTPUT"
-          echo "Releasing v${version} with ${staged}"
+      - name: Show the downloaded assets
+        run: ls -l dist
 
       - uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ steps.assets.outputs.version }}
-          name: Simple Sound Generator v${{ steps.assets.outputs.version }}
+          tag_name: v${{ needs.check.outputs.version }}
+          name: Simple Sound Generator v${{ needs.check.outputs.version }}
           make_latest: true
           generate_release_notes: true
           fail_on_unmatched_files: true
@@ -173,15 +166,15 @@ jobs:
 
             The screenshot above is rendered from the current source by CI.
           files: |
-            ${{ steps.assets.outputs.zip }}
-            ${{ steps.assets.outputs.screenshot }}
+            dist/SimpleSoundGenerator-v${{ needs.check.outputs.version }}.zip
+            dist/screenshot.png
 
       - name: Verify both assets are attached
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -eu
-          version="${{ steps.assets.outputs.version }}"
+          version="${{ needs.check.outputs.version }}"
           gh release view "v${version}" --json assets --jq '.assets[].name' | tee /tmp/assets.txt
           grep -qx "SimpleSoundGenerator-v${version}.zip" /tmp/assets.txt
           grep -qx "screenshot.png" /tmp/assets.txt
