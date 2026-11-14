@@ -52,6 +52,7 @@ delivery file list and must never be added to a shipped zip.
 | `config/settings.ini`, `config/.hf_token` | preferences and credential (gitignored) |
 | `outputs/`, `logs/` | generated audio, the rotating app log and `bootstrap.log` (gitignored) |
 | `_dev/build_delivery.py` | dev-only staging + versioned zip builder |
+| `_dev/check_versions.py` | CI guard: `APP_VERSION`, zip entries, README/requirements pins |
 | `_dev/screenshot.py` | dev/CI-only offscreen renderer for `docs/screenshot.png` |
 | `docs/screenshot.png` | window image embedded in the README and attached to releases |
 | `.github/workflows/release.yml` | CI: compile/validate, zip build, screenshot, GitHub release |
@@ -66,7 +67,7 @@ and manager so scripted use works too.
 ```bash
 # compile check — use the project interpreter, not a system python
 .venv/Scripts/python.exe -m py_compile code/app.py code/audio_engine.py code/model_manager.py \
-    code/flash_attn_setup.py code/paths.py
+    code/flash_attn_setup.py code/paths.py _dev/check_versions.py
 
 # offscreen UI check (write the harness to a file, see below)
 PYTHONIOENCODING=utf-8 QT_QPA_PLATFORM=offscreen \
@@ -77,6 +78,9 @@ bash -n run.sh
 
 # package (bump APP_VERSION in code/app.py first)
 .venv/Scripts/python.exe _dev/build_delivery.py
+
+# verify APP_VERSION, the zip entries and the documented pins
+.venv/Scripts/python.exe _dev/check_versions.py
 ```
 
 There is no `.venv/bin/python` on this Windows checkout. Use

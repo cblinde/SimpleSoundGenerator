@@ -46,7 +46,7 @@ jobs:
           python -m py_compile \
             code/app.py code/audio_engine.py code/model_manager.py \
             code/paths.py code/flash_attn_setup.py \
-            _dev/build_delivery.py _dev/screenshot.py
+            _dev/build_delivery.py _dev/screenshot.py _dev/check_versions.py
 
       - name: Validate registry and launcher
         run: |
@@ -55,6 +55,9 @@ jobs:
 
       - name: Build portable delivery zip
         run: python _dev/build_delivery.py
+
+      - name: Check APP_VERSION, zip entries and documented pins
+        run: python _dev/check_versions.py
 
       - name: Decide whether a release is needed
         id: release
