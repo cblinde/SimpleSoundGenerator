@@ -3,7 +3,7 @@
 Runs in CI after ``_dev/build_delivery.py`` and can be used by hand::
 
     python _dev/check_versions.py
-    python _dev/check_versions.py --zip delivery/SimpleSoundGenerator-v1.7.5-20261114-144401.zip
+    python _dev/check_versions.py --zip delivery/SimpleSoundGenerator-v<version>-<timestamp>.zip
 
 It fails when
 
