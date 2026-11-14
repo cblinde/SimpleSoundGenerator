@@ -28,8 +28,9 @@ torchsde==0.2.6                   # CosineDPMSolverMultistepScheduler imports it
 # --- audio I/O ------------------------------------------------------------
 numpy==2.4.6
 soundfile==0.14.0                 # libsndfile wheels -> 24-bit PCM WAV + FLAC export
-lameenc==1.9.0                    # LAME MP3 encoder (320 kbps); LGPL-3.0 like PySide6,
-                                  # and the MP3 patents expired in 2017
+lameenc==1.9.0                    # LAME MP3 encoder (320 kbps); LGPL-3.0-or-later
+                                  # (LAME itself LGPL-2.0-or-later); MP3 patents
+                                  # expired in 2017
 
 # --- desktop UI -----------------------------------------------------------
 PySide6==6.12.0                   # QtWidgets + QtMultimedia (player, drag-n-drop);

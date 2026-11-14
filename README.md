@@ -413,11 +413,12 @@ backend goes to `logs/app.log`.
 
 320 kbps is the highest bitrate MPEG-1 Layer III defines at 44.1 kHz and quality
 0 is LAME's most thorough search, so this is the best MP3 the format allows. MP3
-encoding uses `lameenc` (LAME bindings), which is **LGPL-3.0 — the same license
-as the PySide6 UI**, and the MP3 patents expired in 2017, so it does not change
-what you may do with the app. FLAC uses the `soundfile`/libsndfile pair already
-shipped. If `lameenc` is missing (an older `.venv`), a batch with MP3 ticked
-reports that and asks you to re-run the bootstrap rather than writing nothing.
+encoding uses `lameenc` (LAME bindings), which is **LGPL-3.0-or-later** — the
+bundled LAME is LGPL-2.0-or-later — and the MP3 patents expired in 2017, so it
+does not change what you may do with the app. FLAC uses the
+`soundfile`/libsndfile pair already shipped. If `lameenc` is missing (an older
+`.venv`), a batch with MP3 ticked reports that and asks you to re-run the
+bootstrap rather than writing nothing.
 
 ## Player and export
 
@@ -733,15 +734,16 @@ undo.
 ## Licence
 
 Code is MIT (see `LICENSE`); the models are not. The weights are downloaded at
-runtime and stay under Stability AI's terms — Stable Audio Open 1.0 is covered by
-the **Stability AI Community License** (free for research, non-commercial and
-limited commercial use; commercial use above its revenue threshold needs a paid
-licence), and the three Stable Audio 3 repositories carry their own gated terms
-that you accept per repository. `LICENSE` also lists the third-party packages
-installed into `.venv`. The GUI binding is **PySide6 (LGPL-3.0)**, chosen over the
-GPL-3.0 PyQt6 precisely so the app can be distributed as closed source — see
-`LICENSE` for what that still requires. The MP3 encoder (`lameenc`, LAME) is
-LGPL-3.0 on the same terms; its patents expired in 2017.
+runtime and stay under Stability AI's terms — Stable Audio Open 1.0 and the three
+Stable Audio 3 repositories are covered by the **Stability AI Community License**
+(Hugging Face name `stable-audio-community`; free for research, non-commercial and
+limited commercial use, with paid coverage above its revenue threshold) and are
+gated per repository; the SA3 T5Gemma encoder also carries the **Gemma Terms of
+Use**. `LICENSE` lists the third-party packages installed into `.venv`. The GUI
+binding is **PySide6 (LGPL-3.0)**, chosen over the GPL-3.0 PyQt6 precisely so the
+app can be distributed as closed source — see `LICENSE` for what that still
+requires. The MP3 encoder `lameenc` is **LGPL-3.0-or-later** (bundled LAME:
+LGPL-2.0-or-later); the MP3 patents expired in 2017.
 
 ## Verification status
 
@@ -750,8 +752,8 @@ Actions (Ubuntu, Python 3.12, no GPU):
 
 * CI compiles every module, validates `config/models.json`, syntax-checks
   `run.sh` and builds the delivery zip on each push; the release job attaches
-  that zip plus the offscreen-rendered `docs/screenshot.png` when the version
-  was bumped (or that tag is new).
+  that zip plus the offscreen-rendered `docs/screenshot.png` when a release is
+  due (version bump, missing tag or a forced manual run).
 
 * `run.bat --setup-only` — reuses `.venv`, verifies every pin and reports
   `torch 2.7.1+cpu` / `torchaudio 2.7.1+cpu`; `import stable_audio_3` succeeds

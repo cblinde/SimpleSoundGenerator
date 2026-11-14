@@ -1367,8 +1367,9 @@ class AudioEngine:
     def _write_mp3(self, path: Path, data: np.ndarray, sample_rate: int) -> None:
         """Encode 320 kbps CBR at LAME's slowest/best setting.
 
-        lameenc wraps LAME and is LGPL-3.0 (the MP3 patents expired in 2017), so
-        it is licensed like the PySide6 the app already ships.
+        lameenc wraps LAME and is LGPL-3.0-or-later (the bundled LAME itself is
+        LGPL-2.0-or-later); the MP3 patents expired in 2017, so adding MP3
+        export does not change the app's distribution terms.
         """
         try:
             import lameenc

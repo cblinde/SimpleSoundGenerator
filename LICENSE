@@ -12,9 +12,10 @@ model weights or the audio you generate with them — see part 2.
 1. Application code — MIT License
 ---------------------------------
 
-Applies to: code/app.py, code/audio_engine.py, code/model_manager.py, code/paths.py,
-code/flash_attn_setup.py, run.bat, run.sh, config/models.json, code/requirements.txt, README.md
-and _dev/build_delivery.py.
+Applies to everything in this repository that is not a third-party component or
+a model weight: code/*.py, code/requirements.txt, config/models.json, run.bat,
+run.sh, README.md, AGENTS.md, docs/screenshot.png, _dev/*.py and
+.github/workflows/release.yml.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -59,11 +60,14 @@ cannot grant rights the model licence withholds.
 **stabilityai/stable-audio-3-small-music**
 **stabilityai/stable-audio-3-small-sfx**
 **stabilityai/stable-audio-3-medium**
-Licence: Stability AI's terms for the Stable Audio 3 family, shown on each
-repository page and accepted per repository. All three repositories are gated:
-the files are only served to accounts that have accepted the terms while signed
-in. Check the licence on the repository page before publishing or monetising
-generated audio.
+Licence: Stability AI Community License (Hugging Face licence name
+`stable-audio-community`) — the same family of terms as Stable Audio Open 1.0,
+accepted per repository. The bundled T5Gemma text encoder is additionally
+redistributed under the Gemma Terms of Use (<https://ai.google.dev/gemma/terms>),
+including its use restrictions. All
+three repositories are gated: the files are only served to accounts that have
+accepted the terms while signed in. Check the licence on the repository page
+before publishing or monetising generated audio.
 
 All Stable Audio names and marks belong to Stability AI Ltd. This application is
 an independent client for those models and is not affiliated with, endorsed by
@@ -73,8 +77,9 @@ or supported by Stability AI.
 3. Third-party software — installed, not bundled
 ------------------------------------------------
 
-run.bat / run.sh install these into ./.venv from PyPI; their licences and the
-notices they ship with apply unchanged:
+run.bat / run.sh install these into ./.venv (from PyPI, the PyTorch wheel index
+or the stable-audio-3 GitHub archive); their licences and the notices they ship
+with apply unchanged, and transitive dependencies keep their own licences:
 
   PyTorch, torchaudio                 BSD-3-Clause
   diffusers, transformers             Apache-2.0
@@ -83,8 +88,9 @@ notices they ship with apply unchanged:
   einops, einops-exts                 MIT
   numpy, soundfile                    BSD-3-Clause
   PySide6 / Qt for Python             LGPL-3.0 (Qt itself: LGPL-3.0 / GPL / commercial)
-  lameenc                             LGPL-3.0 (LAME); MP3 patents expired in 2017
-  stable_audio_3 (source archive)     Stability AI — see its repository
+  lameenc                             LGPL-3.0-or-later (bundled LAME:
+                                      LGPL-2.0-or-later); MP3 patents expired 2017
+  stable_audio_3 (source archive)     MIT (Stability AI)
 
 `run.bat` / `run.sh` also download a portable CPython build
 (python-build-standalone) into `./.python` when no suitable interpreter is

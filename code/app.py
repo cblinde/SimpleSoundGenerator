@@ -137,7 +137,7 @@ except Exception:  # noqa: BLE001 - player degrades gracefully
 APP_TITLE = "Simple Sound Generator · Stable Audio Desktop"
 #: Shown in the window title, the startup log and used by ``_dev/build_delivery.py``
 #: to name the delivery zip. Bump it before building a new distribution.
-APP_VERSION = "1.7.3"
+APP_VERSION = "1.7.4"
 #: Title bar text: the version is part of it so a user can tell which build is
 #: running (and quote it when reporting a problem) without opening a log file.
 WINDOW_TITLE = f"{APP_TITLE} · v{APP_VERSION}"
