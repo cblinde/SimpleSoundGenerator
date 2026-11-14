@@ -705,9 +705,10 @@ specific travels with it.
 The same steps run in GitHub Actions (`.github/workflows/release.yml`) on every
 push to `main`: the job compiles every module, validates `config/models.json`,
 syntax-checks `run.sh`, builds the zip and renders `docs/screenshot.png`
-offscreen (PySide6 without torch). Both files are then attached to the GitHub
-release for the current `APP_VERSION`, tagged `v<version>`; a pull request only
-runs the checks and keeps the artifacts.
+offscreen (PySide6 without torch). A release tagged `v<version>` is only created
+when `APP_VERSION` changed in that push or the tag does not exist yet, so
+ordinary pushes keep their artifacts but never overwrite the assets of an
+existing release. A pull request only runs the checks and keeps the artifacts.
 
 ## Uninstalling / starting clean
 
@@ -746,7 +747,8 @@ Actions (Ubuntu, Python 3.12, no GPU):
 
 * CI compiles every module, validates `config/models.json`, syntax-checks
   `run.sh` and builds the delivery zip on each push; the release job attaches
-  that zip plus the offscreen-rendered `docs/screenshot.png`.
+  that zip plus the offscreen-rendered `docs/screenshot.png` when the version
+  was bumped (or that tag is new).
 
 * `run.bat --setup-only` — reuses `.venv`, verifies every pin and reports
   `torch 2.7.1+cpu` / `torchaudio 2.7.1+cpu`; `import stable_audio_3` succeeds
