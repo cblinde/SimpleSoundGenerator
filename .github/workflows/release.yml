@@ -172,10 +172,15 @@ jobs:
       - name: Verify both assets are attached
         env:
           GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
         run: |
-          set -eu
+          set -euo pipefail
           version="${{ needs.check.outputs.version }}"
-          gh release view "v${version}" --json assets --jq '.assets[].name' | tee /tmp/assets.txt
+          # This job has no checkout, so gh cannot infer the repository from a
+          # git remote - name it explicitly (GH_REPO also covers that).
+          ls -l dist
+          gh release view "v${version}" --repo "${GH_REPO}" \
+            --json assets --jq '.assets[].name' | tee /tmp/assets.txt
           grep -qx "SimpleSoundGenerator-v${version}.zip" /tmp/assets.txt
           grep -qx "screenshot.png" /tmp/assets.txt
           echo "Release v${version} carries the zip and the screenshot."
