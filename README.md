@@ -708,7 +708,10 @@ syntax-checks `run.sh`, builds the zip and renders `docs/screenshot.png`
 offscreen (PySide6 without torch). A release tagged `v<version>` is only created
 when `APP_VERSION` changed in that push or the tag does not exist yet, so
 ordinary pushes keep their artifacts but never overwrite the assets of an
-existing release. A pull request only runs the checks and keeps the artifacts.
+existing release. A manual run (*Actions → Build, screenshot & release → Run
+workflow*) can set `force_release` to refresh an existing release or repair
+missing assets without bumping the version. A pull request only runs the checks
+and keeps the artifacts.
 
 ## Uninstalling / starting clean
 

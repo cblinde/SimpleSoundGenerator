@@ -2,14 +2,20 @@ name: Build, screenshot & release
 
 # Every push to main validates the sources, builds the portable zip and renders
 # docs/screenshot.png offscreen. A GitHub release tagged v<APP_VERSION> is only
-# created when APP_VERSION changed in the pushed commit or that tag does not
-# exist yet, so ordinary pushes never overwrite existing release assets.
+# created when APP_VERSION changed in the pushed commit, that tag does not
+# exist yet, or a manual run sets force_release, so ordinary pushes never
+# overwrite existing release assets.
 # Pull requests only run the checks and keep the artifacts.
 on:
   push:
     branches: [main]
   pull_request:
   workflow_dispatch:
+    inputs:
+      force_release:
+        description: "Create or refresh the v<APP_VERSION> release even if the tag already exists"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -52,6 +58,8 @@ jobs:
 
       - name: Decide whether a release is needed
         id: release
+        env:
+          FORCE_RELEASE: ${{ inputs.force_release || 'false' }}
         run: |
           set -eu
           version="$(python - <<'EOF'
@@ -68,9 +76,13 @@ jobs:
               | sed -nE 's/^APP_VERSION = "([^"]+)".*/\1/p' | head -n 1)"
           fi
           echo "version=${version}" >> "$GITHUB_OUTPUT"
-          # A release is due when the version was bumped in this commit, or when
-          # the tag does not exist yet (first release of that version).
-          if [ "$version" = "$previous" ] && \
+          # A release is due when the version was bumped in this commit, when
+          # the tag does not exist yet (first release of that version), or when
+          # a manual run explicitly forces it.
+          if [ "$FORCE_RELEASE" = "true" ]; then
+            echo "force_release requested - releasing v${version}."
+            echo "create=true" >> "$GITHUB_OUTPUT"
+          elif [ "$version" = "$previous" ] && \
              git ls-remote --tags --exit-code origin "refs/tags/v${version}" >/dev/null 2>&1; then
             echo "APP_VERSION ${version} unchanged and tag v${version} exists - no release."
             echo "create=false" >> "$GITHUB_OUTPUT"
