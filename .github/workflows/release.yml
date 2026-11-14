@@ -171,12 +171,15 @@ jobs:
           generate_release_notes: true
           fail_on_unmatched_files: true
           body: |
+            ![Simple Sound Generator window](https://github.com/${{ github.repository }}/releases/download/v${{ needs.check.outputs.version }}/screenshot.png)
+
             Portable build of Simple Sound Generator — unzip the archive, then
             start `run.bat` (Windows) or `./run.sh` (macOS/Linux). The launcher
             builds its own Python environment and downloads model weights on
             first use, so no installer or admin rights are needed.
 
-            The screenshot above is rendered from the current source by CI.
+            The screenshot is rendered from the current source by CI and
+            attached to this release as `screenshot.png`.
           files: |
             dist/SimpleSoundGenerator-v${{ needs.check.outputs.version }}.zip
             dist/screenshot.png
