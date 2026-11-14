@@ -11,10 +11,13 @@ It fails when
 * the zip does not contain exactly the 12 shipped files, or contains extras;
 * a shipped text file differs from the working tree (staging drift);
 * a pin in ``code/requirements.txt`` is missing, or the README quotes a
-  different version for torch, torchaudio or diffusers.
+  different version for torch, torchaudio or diffusers;
+* the portable CPython version in ``run.sh``, ``run.bat`` and the README
+  disagrees;
+* a comment in ``requirements.txt`` restates a different torch pin.
 
-The check is version-agnostic: bumping ``APP_VERSION`` or a pin only requires
-updating the README, never this file.
+The check is version-agnostic: bumping ``APP_VERSION``, a pin or the portable
+Python version only requires updating the documentation, never this file.
 """
 
 from __future__ import annotations
@@ -47,6 +50,10 @@ EXPECTED_ENTRIES = (
 
 VERSION_RE = re.compile(r'^APP_VERSION\s*=\s*"([^"]+)"', re.MULTILINE)
 PIN_RE = re.compile(r"^([A-Za-z0-9_.-]+)==([0-9][0-9A-Za-z.+-]*)")
+PY_VERSION_PATTERNS = {
+    "run.sh": r'^PY_VERSION="([^"]+)"',
+    "run.bat": r'^set "PY_VERSION=([^"]+)"',
+}
 
 #: README sentences that state a pinned version. Every match must equal the
 #: requirements pin; each package must still be stated at least once, so a
@@ -67,6 +74,18 @@ README_PIN_PATTERNS = {
     ),
     "diffusers": (
         r"pinned diffusers\s+(\d+\.\d+\.\d+)",
+    ),
+}
+
+#: Comments in requirements.txt that restate the torch pin. External bounds
+#: (torchaudio 2.11.1, the newest torch 2.15) are deliberately not checked:
+#: they describe PyPI, not the pin.
+REQUIREMENTS_PIN_PATTERNS = {
+    "torch": (
+        r"PyTorch is pinned to\s+(\d+\.\d+\.\d+)",
+        r"The tag already says\s*#?\s*(\d+\.\d+\.\d+)",
+        r"e\.g\. (\d+\.\d+\.\d+)\+cu",
+        r"never got\s+(\d+\.\d+\.\d+)",
     ),
 }
 
@@ -106,6 +125,52 @@ def check_readme(pins: dict[str, str], errors: list[str]) -> None:
             if value != pins[package]:
                 errors.append(
                     f"README says {package} {value}, but requirements.txt pins {pins[package]}"
+                )
+
+
+def check_python_version(errors: list[str]) -> str | None:
+    """Keep the portable CPython pin in both launchers and the README aligned."""
+    versions: dict[str, str] = {}
+    for name, pattern in PY_VERSION_PATTERNS.items():
+        text = (ROOT / name).read_text(encoding="utf-8")
+        match = re.search(pattern, text, re.MULTILINE)
+        if not match:
+            errors.append(f"no PY_VERSION assignment found in {name}")
+        else:
+            versions[name] = match.group(1)
+    if not versions:
+        return None
+
+    expected = versions.get("run.sh") or next(iter(versions.values()))
+    if len(set(versions.values())) > 1:
+        errors.append(
+            "launchers disagree on PY_VERSION: "
+            + ", ".join(f"{name} {value}" for name, value in versions.items())
+        )
+
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    found = re.findall(r"CPython\s+(\d+\.\d+\.\d+)", readme)
+    if not found:
+        errors.append("README no longer states the portable CPython version")
+    for value in sorted(set(found)):
+        if value != expected:
+            errors.append(f"README says CPython {value}, but run.sh uses {expected}")
+    return expected
+
+
+def check_requirements_comments(pins: dict[str, str], errors: list[str]) -> None:
+    """Require pin restatements in requirements.txt comments to match the pins."""
+    text = (ROOT / "code" / "requirements.txt").read_text(encoding="utf-8")
+    for package, patterns in REQUIREMENTS_PIN_PATTERNS.items():
+        found = [match for pattern in patterns for match in re.findall(pattern, text)]
+        if not found:
+            errors.append(f"requirements.txt comments no longer restate the {package} pin")
+            continue
+        for value in sorted(set(found)):
+            if value != pins[package]:
+                errors.append(
+                    f"requirements.txt comment says {package} {value}, "
+                    f"but the pin is {pins[package]}"
                 )
 
 
@@ -202,8 +267,10 @@ def main(argv: list[str] | None = None) -> int:
     for package in README_PIN_PATTERNS:
         if package not in pins:
             errors.append(f"requirements.txt has no concrete {package} pin")
+    python_version = check_python_version(errors)
     if not errors:
         check_readme(pins, errors)
+        check_requirements_comments(pins, errors)
 
     zip_path = args.zip or newest_zip(version)
     if zip_path is None:
@@ -216,7 +283,7 @@ def main(argv: list[str] | None = None) -> int:
 
     print(
         f"OK: APP_VERSION {version}; {zip_path.name} has {len(EXPECTED_ENTRIES)} entries; "
-        "README and requirements.txt agree on "
+        f"portable CPython {python_version}; README and requirements.txt agree on "
         + ", ".join(f"{name} {pins[name]}" for name in README_PIN_PATTERNS)
     )
     return 0

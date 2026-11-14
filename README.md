@@ -208,7 +208,7 @@ SimpleSoundGenerator/
 | `config/models.json` | Editable registry: ids, repos, limits, default steps and guidance |
 | `run.bat` / `run.sh` | Bootstrap the interpreter, `.venv`, PyTorch and the SA3 runtime, then launch |
 | `_dev/build_delivery.py` | Dev-only staging + versioned zip builder (its output is never shipped inside the zip) |
-| `_dev/check_versions.py` | CI guard: `APP_VERSION`, zip entries and README/requirements pins must agree |
+| `_dev/check_versions.py` | CI guard: `APP_VERSION`, zip entries, portable Python and README/requirements pins must agree |
 | `_dev/screenshot.py` | Dev/CI-only offscreen renderer for `docs/screenshot.png` |
 | `.github/workflows/release.yml` | CI: compile/validate, build the zip, render the screenshot, publish the release |
 | `docs/screenshot.png` | Window image used by this README and attached to the release |

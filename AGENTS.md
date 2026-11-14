@@ -52,7 +52,7 @@ delivery file list and must never be added to a shipped zip.
 | `config/settings.ini`, `config/.hf_token` | preferences and credential (gitignored) |
 | `outputs/`, `logs/` | generated audio, the rotating app log and `bootstrap.log` (gitignored) |
 | `_dev/build_delivery.py` | dev-only staging + versioned zip builder |
-| `_dev/check_versions.py` | CI guard: `APP_VERSION`, zip entries, README/requirements pins |
+| `_dev/check_versions.py` | CI guard: `APP_VERSION`, zip entries, portable Python, README/requirements pins |
 | `_dev/screenshot.py` | dev/CI-only offscreen renderer for `docs/screenshot.png` |
 | `docs/screenshot.png` | window image embedded in the README and attached to releases |
 | `.github/workflows/release.yml` | CI: compile/validate, zip build, screenshot, GitHub release |
